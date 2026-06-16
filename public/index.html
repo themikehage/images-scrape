@@ -1,342 +1,914 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Image Scraper - Bing</title>
+  <title>ImageScraper — Image Search Tool</title>
+  <meta name="description" content="Search and browse images from Bing Image Search. A fast, minimal tool for developers and designers.">
+  <meta property="og:title" content="ImageScraper">
+  <meta property="og:description" content="Search and browse images from Bing Image Search.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%237C3AED'/%3E%3Ctext x='16' y='22' text-anchor='middle' fill='white' font-size='18' font-family='serif' font-style='italic'%3EI%3C/text%3E%3C/svg%3E">
+
   <style>
     :root {
-      --bg: #0f172a;
-      --surface: #1e293b;
-      --surface-2: #334155;
-      --text: #f1f5f9;
-      --text-2: #94a3b8;
-      --accent: #3b82f6;
-      --accent-hover: #2563eb;
-      --error: #ef4444;
-      --border: #475569;
-      --radius: 8px;
+      --bg: #F5F5F4;
+      --surface: #FFFFFF;
+      --text: #1C1917;
+      --text-2: #78716C;
+      --text-3: #A8A29E;
+      --accent: #7C3AED;
+      --accent-hover: #6D28D9;
+      --accent-soft: #F5F3FF;
+      --border: #E7E5E4;
+      --border-strong: #D6D3D1;
+      --error: #DC2626;
+      --error-soft: #FEF2F2;
+      --success: #10B981;
+      --overlay: rgba(0,0,0,0.55);
+
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      --space-2xl: 48px;
+      --space-3xl: 64px;
+
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --radius-full: 9999px;
+
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+      --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+      --shadow-xl: 0 20px 25px rgba(0,0,0,0.1);
+
+      --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+      --fast: 150ms var(--ease-out);
+      --normal: 250ms var(--ease-out);
+      --slow: 350ms var(--ease-out);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 0.9375rem;
+      line-height: 1.5;
       color: var(--text);
+      background: var(--bg);
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem 1rem;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    .container { max-width: 1200px; width: 100%; }
-
-    h1 {
-      font-size: 1.75rem;
-      font-weight: 700;
-      margin-bottom: 0.25rem;
-    }
-    .subtitle {
-      color: var(--text-2);
-      margin-bottom: 2rem;
-      font-size: 0.9rem;
-    }
-
-    .card {
+    /* ========== HEADER ========== */
+    .header {
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .form-row {
+      border-bottom: 1px solid var(--border);
+      height: 64px;
       display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-      align-items: flex-end;
-    }
-    .form-group {
-      flex: 1;
-      min-width: 250px;
-    }
-    .form-group label {
-      display: block;
-      font-size: 0.8rem;
-      color: var(--text-2);
-      margin-bottom: 0.4rem;
-      font-weight: 500;
-    }
-    .form-group input {
-      width: 100%;
-      padding: 0.65rem 0.85rem;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      color: var(--text);
-      font-size: 0.9rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .form-group input:focus {
-      border-color: var(--accent);
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
-    .btn {
-      padding: 0.65rem 1.5rem;
+    .header-inner {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 var(--space-2xl);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.125rem;
+      font-weight: 400;
+      font-style: italic;
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-accent { color: var(--accent); }
+
+    .header-status {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-3);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: var(--bg);
+      border-radius: var(--radius-full);
+    }
+
+    .header-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+
+    /* ========== MAIN ========== */
+    .main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: var(--space-2xl);
+    }
+
+    /* ========== SEARCH ========== */
+    .search-section { margin-bottom: var(--space-xl); }
+
+    .search-form {
+      display: flex;
+      gap: var(--space-sm);
+      align-items: stretch;
+    }
+
+    .input-wrap {
+      flex: 1;
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      color: var(--text-3);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      height: 56px;
+      padding: 0 16px 0 48px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-lg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color var(--fast), box-shadow var(--fast);
+    }
+
+    .search-input::placeholder { color: var(--text-3); }
+    .search-input:hover { border-color: var(--border-strong); }
+
+    .search-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+
+    .limit-select {
+      height: 56px;
+      padding: 0 36px 0 var(--space-md);
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-lg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      outline: none;
+      cursor: pointer;
+      transition: border-color var(--fast), box-shadow var(--fast);
+      min-width: 100px;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23A8A29E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+
+    .limit-select:hover { border-color: var(--border-strong); }
+    .limit-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+    .search-btn {
+      height: 56px;
+      padding: 0 28px;
       background: var(--accent);
       color: white;
       border: none;
-      border-radius: var(--radius);
-      font-size: 0.9rem;
+      border-radius: var(--radius-lg);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9375rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      transition: background var(--fast), transform var(--fast);
       white-space: nowrap;
+      flex-shrink: 0;
     }
-    .btn:hover { background: var(--accent-hover); }
-    .btn:disabled {
+
+    .search-btn:hover { background: var(--accent-hover); }
+    .search-btn:active { transform: translateY(1px); }
+
+    .search-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+      transform: none;
     }
 
-    .hint {
-      font-size: 0.8rem;
-      color: var(--text-2);
-      margin-top: 0.5rem;
+    .search-btn:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
     }
 
-    .loading { display: none; }
-    .loading.active { display: flex; align-items: center; gap: 0.75rem; padding: 2rem; justify-content: center; }
-    .spinner {
-      width: 24px; height: 24px;
-      border: 3px solid var(--surface-2);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-icon { width: 18px; height: 18px; }
 
-    .error-msg {
-      display: none;
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid var(--error);
-      border-radius: var(--radius);
-      padding: 0.85rem 1rem;
-      color: var(--error);
-      font-size: 0.85rem;
-      margin-bottom: 1rem;
+    .search-hint {
+      font-size: 0.8125rem;
+      color: var(--text-3);
+      margin-top: var(--space-sm);
+      padding-left: 2px;
     }
-    .error-msg.active { display: block; }
 
-    .result-section { margin-top: 1.5rem; }
-    .result-section h2 {
-      font-size: 1.15rem;
-      margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
+    /* ========== DIVIDER ========== */
+    .divider { height: 1px; background: var(--border); margin-bottom: var(--space-xl); }
+
+    /* ========== RESULTS ========== */
+    .results-section { min-height: 200px; }
+
+    .result-group { margin-bottom: var(--space-xl); }
+
+    .result-header {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-md);
+      padding-bottom: var(--space-sm);
       border-bottom: 1px solid var(--border);
     }
-    .result-section h2 span { color: var(--accent); }
 
+    .result-query {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.375rem;
+      line-height: 1.2;
+    }
+
+    .result-query-accent { color: var(--accent); }
+
+    .result-count {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--text-3);
+    }
+
+    .result-error {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: var(--space-sm) var(--space-md);
+      background: var(--error-soft);
+      border: 1px solid var(--error);
+      border-radius: var(--radius-md);
+      color: var(--error);
+      font-size: 0.8125rem;
+      margin-bottom: var(--space-md);
+    }
+
+    .result-error-icon { width: 16px; height: 16px; flex-shrink: 0; }
+
+    /* ========== GRID ========== */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-md);
     }
 
+    /* ========== IMAGE CARD ========== */
     .image-card {
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: var(--radius-lg);
       overflow: hidden;
-      transition: transform 0.2s, border-color 0.2s;
-    }
-    .image-card:hover {
-      transform: translateY(-2px);
-      border-color: var(--accent);
-    }
-
-    .image-card .img-wrap {
-      width: 100%;
-      aspect-ratio: 4/3;
-      overflow: hidden;
-      background: var(--surface-2);
+      box-shadow: var(--shadow-sm);
+      transition: transform var(--normal), box-shadow var(--normal);
+      cursor: pointer;
       position: relative;
     }
-    .image-card .img-wrap img {
+
+    .image-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .image-card-link { display: block; text-decoration: none; color: inherit; }
+    .image-card-link:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: var(--radius-lg); }
+
+    .card-img-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    .card-img-wrap img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
-    }
-    .image-card .img-wrap .placeholder {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      color: var(--text-2);
-      font-size: 0.8rem;
+      transition: transform var(--slow);
     }
 
-    .image-card .info {
-      padding: 0.65rem;
+    .image-card:hover .card-img-wrap img { transform: scale(1.05); }
+
+    .card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, var(--overlay) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity var(--normal);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: var(--space-md);
     }
-    .image-card .info .title {
-      font-size: 0.8rem;
-      color: var(--text);
+
+    .image-card:hover .card-overlay { opacity: 1; }
+
+    .card-overlay-title {
+      color: white;
+      font-size: 0.8125rem;
+      font-weight: 500;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
-      margin-bottom: 0.3rem;
+      line-height: 1.4;
     }
-    .image-card .info .dims {
-      font-size: 0.7rem;
+
+    .card-overlay-source {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .card-img-fallback {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-3);
+    }
+
+    .card-img-fallback svg { width: 28px; height: 28px; opacity: 0.4; }
+
+    .no-results {
+      font-size: 0.9375rem;
       color: var(--text-2);
+      text-align: center;
+      padding: var(--space-xl);
     }
 
-    .error-badge {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid var(--error);
-      border-radius: var(--radius);
-      padding: 0.75rem 1rem;
-      color: var(--error);
-      font-size: 0.85rem;
-      margin-bottom: 1rem;
+    /* ========== EMPTY STATE ========== */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-3xl) var(--space-lg);
+      text-align: center;
     }
 
+    .empty-icon { width: 56px; height: 56px; color: var(--border-strong); margin-bottom: var(--space-lg); }
+
+    .empty-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem;
+      margin-bottom: var(--space-sm);
+    }
+
+    .empty-subtitle {
+      font-size: 0.9375rem;
+      color: var(--text-2);
+      max-width: 400px;
+      line-height: 1.5;
+    }
+
+    .empty-chips {
+      display: flex;
+      gap: var(--space-sm);
+      margin-top: var(--space-lg);
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .empty-chip {
+      padding: 6px 16px;
+      background: var(--accent-soft);
+      border: 1px solid transparent;
+      border-radius: var(--radius-full);
+      color: var(--accent);
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background var(--fast), border-color var(--fast);
+    }
+
+    .empty-chip:hover {
+      background: var(--surface);
+      border-color: var(--accent);
+    }
+
+    .empty-chip:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* ========== ERROR STATE ========== */
+    .error-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-3xl) var(--space-lg);
+      text-align: center;
+    }
+
+    .error-state-icon { width: 40px; height: 40px; color: var(--error); margin-bottom: var(--space-md); }
+
+    .error-state-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: var(--space-sm);
+    }
+
+    .error-state-msg {
+      font-size: 0.9375rem;
+      color: var(--text-2);
+      max-width: 400px;
+      margin-bottom: var(--space-lg);
+      line-height: 1.5;
+    }
+
+    .retry-btn {
+      padding: 10px 24px;
+      background: transparent;
+      color: var(--accent);
+      border: 2px solid var(--accent);
+      border-radius: var(--radius-md);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background var(--fast), color var(--fast);
+    }
+
+    .retry-btn:hover { background: var(--accent); color: white; }
+    .retry-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* ========== LOADING SKELETONS ========== */
+    .skeleton-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--space-md);
+    }
+
+    .skeleton-card {
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .skeleton-img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: var(--border);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-body { padding: var(--space-sm) var(--space-md) var(--space-md); }
+
+    .skeleton-line {
+      height: 12px;
+      background: var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 6px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-line:last-child {
+      width: 60%;
+      margin-bottom: 0;
+      animation-delay: 0.2s;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ========== ANIMATIONS ========== */
+    .image-card.animate-in {
+      animation: cardIn var(--normal) both;
+    }
+
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ========== REDUCED MOTION ========== */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+
+      .skeleton-img, .skeleton-line { animation: none !important; opacity: 0.5; }
+      .image-card:hover { transform: none; }
+      .image-card:hover .card-img-wrap img { transform: none; }
+      .image-card:hover .card-overlay { opacity: 0; }
+    }
+
+    /* ========== RESPONSIVE ========== */
+
+    /* Large (≥1440px) */
+    @media (min-width: 1440px) {
+      .grid, .skeleton-grid { grid-template-columns: repeat(5, 1fr); }
+    }
+
+    /* Desktop (1024–1439px) */
+    @media (min-width: 1025px) and (max-width: 1439px) {
+      .grid, .skeleton-grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    /* Tablet (641–1024px) */
+    @media (min-width: 641px) and (max-width: 1024px) {
+      .grid, .skeleton-grid { grid-template-columns: repeat(3, 1fr); }
+      .main { padding: var(--space-lg); }
+      .header-inner { padding: 0 var(--space-lg); }
+    }
+
+    /* Mobile (<641px) */
     @media (max-width: 640px) {
-      .form-row { flex-direction: column; }
-      .form-group { min-width: auto; }
-      .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+      .header-inner { padding: 0 var(--space-md); }
+      .main { padding: var(--space-md); }
+
+      .search-form { flex-direction: column; }
+      .limit-select { width: 100%; }
+      .search-btn { width: 100%; justify-content: center; }
+
+      .grid, .skeleton-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-sm); }
+
+      .result-query { font-size: 1.125rem; }
+
+      .empty-chips { flex-direction: column; align-items: center; }
+      .empty-title { font-size: 1.25rem; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Image Scraper</h1>
-    <p class="subtitle">Busca imágenes en Bing Image Search desde el worker</p>
 
-    <div class="card">
-      <div class="form-row">
-        <div class="form-group">
-          <label for="queries">Términos de búsqueda (separados por coma)</label>
-          <input type="text" id="queries" placeholder="roma, parís, tokio" value="roma">
+  <header class="header">
+    <div class="header-inner">
+      <a href="/" class="brand">
+        <span class="brand-icon">I</span>
+        <span class="brand-name">Image<span class="brand-accent">Scraper</span></span>
+      </a>
+      <span class="header-status">
+        <span class="header-status-dot"></span>
+        Bing
+      </span>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="search-section" id="searchSection">
+      <div class="search-form" role="search">
+        <div class="input-wrap">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input
+            id="searchInput"
+            class="search-input"
+            type="text"
+            placeholder="roma, paris, tokyo"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Search terms separated by commas"
+          >
         </div>
-        <div class="form-group" style="min-width:100px;flex:0 1 100px;">
-          <label for="limit">Límite</label>
-          <input type="number" id="limit" value="12" min="1" max="50">
-        </div>
-        <button class="btn" id="scrapeBtn" onclick="scrape()">Buscar</button>
+        <select id="limitSelect" class="limit-select" aria-label="Results per query">
+          <option value="10">10</option>
+          <option value="20" selected>20</option>
+          <option value="30">30</option>
+          <option value="50">50</option>
+        </select>
+        <button id="searchBtn" class="search-btn" type="button" aria-label="Search">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <span>Search</span>
+        </button>
       </div>
-      <p class="hint">Url del worker: <span id="workerUrl"></span></p>
-    </div>
+      <p class="search-hint">Enter search terms separated by commas</p>
+    </section>
 
-    <div id="error" class="error-msg"></div>
-    <div id="loading" class="loading">
-      <div class="spinner"></div>
-      <span>Buscando imágenes...</span>
-    </div>
-    <div id="results"></div>
-  </div>
+    <div class="divider"></div>
+
+    <section class="results-section" id="results" role="region" aria-label="Search results">
+      <!-- Populated by JavaScript -->
+    </section>
+  </main>
 
   <script>
     const API = '/api/scrape';
 
-    document.getElementById('workerUrl').textContent = window.location.origin;
-    document.getElementById('queries').addEventListener('keydown', e => { if (e.key === 'Enter') scrape(); });
-    document.getElementById('limit').addEventListener('keydown', e => { if (e.key === 'Enter') scrape(); });
+    const $ = (sel, ctx = document) => ctx.querySelector(sel);
+    const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
 
-    function showError(msg) {
-      const el = document.getElementById('error');
-      el.textContent = msg;
-      el.classList.add('active');
-    }
+    const searchInput = $('#searchInput');
+    const limitSelect = $('#limitSelect');
+    const searchBtn = $('#searchBtn');
+    const resultsEl = $('#results');
 
-    function hideError() {
-      document.getElementById('error').classList.remove('active');
-    }
+    /* ========== STATE ========== */
 
-    function setLoading(v) {
-      document.getElementById('loading').classList.toggle('active', v);
-      document.getElementById('scrapeBtn').disabled = v;
-    }
-
-    function buildCard(img) {
-      const dims = img.width && img.height ? `${img.width} × ${img.height}` : '';
-      return `
-        <div class="image-card">
-          <div class="img-wrap">
-            <img src="${img.thumbnail}" alt="${img.title}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=placeholder>Error al cargar</div>'">
+    function showEmptyState() {
+      resultsEl.innerHTML = `
+        <div class="empty-state">
+          <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <h2 class="empty-title">Search for images</h2>
+          <p class="empty-subtitle">Enter one or more terms separated by commas to find images from Bing.</p>
+          <div class="empty-chips">
+            <button class="empty-chip" data-query="roma">roma</button>
+            <button class="empty-chip" data-query="paris">paris</button>
+            <button class="empty-chip" data-query="tokyo">tokyo</button>
+            <button class="empty-chip" data-query="new york">new york</button>
+            <button class="empty-chip" data-query="barcelona">barcelona</button>
           </div>
-          <div class="info">
-            <div class="title">${img.title}</div>
-            ${dims ? `<div class="dims">${dims}</div>` : ''}
-          </div>
+        </div>
+      `;
+
+      $$('.empty-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          searchInput.value = chip.dataset.query;
+          doSearch();
+        });
+      });
+    }
+
+    function showSkeletons(count = 8) {
+      resultsEl.innerHTML = `
+        <div class="skeleton-grid">
+          ${Array.from({ length: count }, () => `
+            <div class="skeleton-card">
+              <div class="skeleton-img"></div>
+              <div class="skeleton-body">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+              </div>
+            </div>
+          `).join('')}
         </div>
       `;
     }
 
-    async function scrape() {
-      hideError();
-      const input = document.getElementById('queries');
-      const limit = parseInt(document.getElementById('limit').value) || 12;
-      const queries = input.value.split(',').map(q => q.trim()).filter(Boolean);
+    function showErrorState(message) {
+      resultsEl.innerHTML = `
+        <div class="error-state">
+          <svg class="error-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <h3 class="error-state-title">Something went wrong</h3>
+          <p class="error-state-msg">${escapeHtml(message)}</p>
+          <button class="retry-btn" type="button">Try again</button>
+        </div>
+      `;
+
+      $('.retry-btn', resultsEl).addEventListener('click', doSearch);
+    }
+
+    function showResults(results) {
+      if (!results || results.length === 0) {
+        resultsEl.innerHTML = `<p class="no-results">No results found.</p>`;
+        return;
+      }
+
+      let html = '';
+      let cardIndex = 0;
+
+      for (const group of results) {
+        const query = escapeHtml(group.query);
+        const images = group.images || [];
+        const error = group.error;
+
+        html += `<div class="result-group">`;
+
+        html += `
+          <div class="result-header">
+            <h2 class="result-query">
+              <span class="result-query-accent">${query}</span>
+            </h2>
+            <span class="result-count">${images.length} image${images.length !== 1 ? 's' : ''}</span>
+          </div>
+        `;
+
+        if (error) {
+          html += `
+            <div class="result-error">
+              <svg class="result-error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <span>${escapeHtml(error)}</span>
+            </div>
+          `;
+        }
+
+        if (images.length > 0) {
+          html += `<div class="grid">`;
+
+          for (const img of images) {
+            const title = escapeHtml(img.title || 'Untitled');
+            const src = escapeAttr(img.link || img.thumbnail || '');
+            const thumbnail = escapeAttr(img.thumbnail || '');
+            const source = escapeAttr(img.source || '');
+            const sourceDisplay = source ? extractDomain(source) : '';
+            const fallbackId = `fallback-${cardIndex}`;
+
+            html += `
+              <div class="image-card" data-index="${cardIndex}">
+                <a class="image-card-link" href="${source || '#'}" target="_blank" rel="noopener noreferrer" title="${title}">
+                  <div class="card-img-wrap">
+                    <img
+                      src="${thumbnail || src}"
+                      alt="${title}"
+                      loading="lazy"
+                      onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                    >
+                    <div class="card-img-fallback" style="display:none">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8.5" cy="8.5" r="1.5"/>
+                        <polyline points="21 15 16 10 5 21"/>
+                      </svg>
+                    </div>
+                    <div class="card-overlay">
+                      <span class="card-overlay-title">${title}</span>
+                      ${sourceDisplay ? `<span class="card-overlay-source">${escapeHtml(sourceDisplay)}</span>` : ''}
+                    </div>
+                  </div>
+                </a>
+              </div>
+            `;
+
+            cardIndex++;
+          }
+
+          html += `</div>`;
+        } else if (!error) {
+          html += `<p class="no-results">No images found for <strong>${query}</strong>. Try different terms.</p>`;
+        }
+
+        html += `</div>`;
+      }
+
+      resultsEl.innerHTML = html;
+
+      // Staggered animation
+      requestAnimationFrame(() => {
+        $$('.image-card', resultsEl).forEach((card, i) => {
+          const delay = Math.min(i * 50, 400);
+          card.style.animationDelay = `${delay}ms`;
+          card.classList.add('animate-in');
+        });
+      });
+    }
+
+    /* ========== UTILITIES ========== */
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function escapeAttr(str) {
+      return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function extractDomain(url) {
+      try {
+        const u = new URL(url);
+        return u.hostname.replace(/^www\./, '');
+      } catch {
+        return url;
+      }
+    }
+
+    /* ========== SEARCH ========== */
+
+    function setLoading(v) {
+      searchBtn.disabled = v;
+      searchBtn.innerHTML = v
+        ? `<span>Searching&hellip;</span>`
+        : `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><span>Search</span>`;
+    }
+
+    async function doSearch() {
+      const raw = searchInput.value.trim();
+      const queries = raw.split(',').map(q => q.trim()).filter(Boolean);
 
       if (queries.length === 0) {
-        showError('Ingresa al menos un término de búsqueda');
+        searchInput.focus();
         return;
       }
 
       setLoading(true);
-      document.getElementById('results').innerHTML = '';
+      showSkeletons(8);
 
       try {
         const res = await fetch(API, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ queries, limit }),
+          body: JSON.stringify({ queries, limit: parseInt(limitSelect.value, 10) || 20 }),
         });
 
         const data = await res.json();
 
         if (!data.success) {
-          showError(data.error || 'Error del servidor');
+          showErrorState(data.error || 'Server error');
           return;
         }
 
-        let html = '';
-        for (const result of data.results) {
-          html += `<div class="result-section">`;
-          html += `<h2><span>${result.query}</span> — ${result.images.length} imágenes</h2>`;
-
-          if (result.error) {
-            html += `<div class="error-badge">${result.error}</div>`;
-          }
-
-          if (result.images.length > 0) {
-            html += `<div class="grid">`;
-            for (const img of result.images) {
-              html += buildCard(img);
-            }
-            html += `</div>`;
-          } else if (!result.error) {
-            html += `<p style="color:var(--text-2)">No se encontraron imágenes</p>`;
-          }
-
-          html += `</div>`;
-        }
-
-        document.getElementById('results').innerHTML = html;
+        showResults(data.results);
       } catch (err) {
-        showError('Error de conexión: ' + err.message);
+        showErrorState(err.message || 'Connection error');
       } finally {
         setLoading(false);
       }
     }
 
-    scrape();
+    /* ========== EVENTS ========== */
+
+    searchBtn.addEventListener('click', doSearch);
+
+    searchInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        doSearch();
+      }
+    });
+
+    /* ========== INIT ========== */
+
+    showEmptyState();
   </script>
 </body>
 </html>
