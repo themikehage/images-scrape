@@ -551,6 +551,236 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    /* ========== LIGHTBOX ========== */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      opacity: 0;
+      transition: opacity var(--normal);
+    }
+
+    .lightbox.open { opacity: 1; }
+
+    .lightbox-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      background: var(--surface);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-xl);
+      display: flex;
+      flex-direction: column;
+      transform: scale(0.95) translateY(8px);
+      transition: transform var(--normal);
+    }
+
+    .lightbox.open .lightbox-content {
+      transform: scale(1) translateY(0);
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 10;
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-full);
+      border: none;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--fast);
+    }
+
+    .lightbox-close:hover { background: rgba(0,0,0,0.75); }
+    .lightbox-close:focus-visible { outline: 2px solid white; outline-offset: 2px; }
+
+    .lightbox-close svg { width: 18px; height: 18px; }
+
+    .lightbox-img-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1a1a1a;
+      min-height: 200px;
+      max-height: 70vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .lightbox-img-wrap img {
+      max-width: 100%;
+      max-height: 70vh;
+      object-fit: contain;
+      display: block;
+    }
+
+    .lightbox-img-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-img-loading .spinner {
+      width: 28px; height: 28px;
+      border: 3px solid rgba(255,255,255,0.15);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .lightbox-body {
+      padding: var(--space-md) var(--space-lg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-md);
+    }
+
+    .lightbox-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .lightbox-title {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lightbox-actions {
+      display: flex;
+      gap: var(--space-sm);
+      flex-shrink: 0;
+    }
+
+    .lightbox-btn {
+      height: 38px;
+      padding: 0 16px;
+      border-radius: var(--radius-md);
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: background var(--fast), color var(--fast);
+      white-space: nowrap;
+    }
+
+    .lightbox-btn-icon { width: 16px; height: 16px; }
+
+    .lightbox-btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .lightbox-btn-primary:hover { background: var(--accent-hover); }
+
+    .lightbox-btn-secondary {
+      background: transparent;
+      color: var(--text-2);
+      border: 1px solid var(--border);
+    }
+
+    .lightbox-btn-secondary:hover {
+      background: var(--bg);
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+
+    .lightbox-btn-secondary:focus-visible,
+    .lightbox-btn-primary:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* ========== HISTORY ========== */
+    .history-section {
+      display: none;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-top: var(--space-sm);
+      flex-wrap: wrap;
+    }
+
+    .history-section.visible { display: flex; }
+
+    .history-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .history-chips {
+      display: flex;
+      gap: var(--space-xs);
+      flex-wrap: wrap;
+    }
+
+    .history-chip {
+      padding: 3px 12px;
+      background: var(--accent-soft);
+      border: 1px solid transparent;
+      border-radius: var(--radius-full);
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background var(--fast), border-color var(--fast);
+    }
+
+    .history-chip:hover {
+      background: var(--surface);
+      border-color: var(--accent);
+    }
+
+    .history-chip:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .history-clear {
+      padding: 3px 8px;
+      background: transparent;
+      border: none;
+      color: var(--text-3);
+      font-size: 0.7rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      transition: color var(--fast);
+    }
+
+    .history-clear:hover { color: var(--error); }
+    .history-clear:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    body.no-scroll { overflow: hidden; }
+
     /* ========== REDUCED MOTION ========== */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -650,6 +880,11 @@
         </button>
       </div>
       <p class="search-hint">Enter search terms separated by commas</p>
+      <div class="history-section" id="historySection">
+        <span class="history-label">Recent</span>
+        <div class="history-chips" id="historyChips"></div>
+        <button class="history-clear" id="historyClear" type="button">Clear</button>
+      </div>
     </section>
 
     <div class="divider"></div>
@@ -659,8 +894,50 @@
     </section>
   </main>
 
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image preview">
+    <div class="lightbox-content">
+      <button class="lightbox-close" id="lightboxClose" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+      <div class="lightbox-img-wrap">
+        <div class="lightbox-img-loading" id="lightboxLoading">
+          <div class="spinner"></div>
+        </div>
+        <img id="lightboxImg" src="" alt="">
+      </div>
+      <div class="lightbox-body">
+        <div class="lightbox-info">
+          <div class="lightbox-title" id="lightboxTitle"></div>
+        </div>
+        <div class="lightbox-actions">
+          <a class="lightbox-btn lightbox-btn-secondary" id="lightboxSource" target="_blank" rel="noopener noreferrer">
+            <svg class="lightbox-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+              <polyline points="15 3 21 3 21 9"/>
+              <line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+            Source
+          </a>
+          <a class="lightbox-btn lightbox-btn-primary" id="lightboxDownload" target="_blank" rel="noopener noreferrer">
+            <svg class="lightbox-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Open full size
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API = '/api/scrape';
+    const HISTORY_KEY = 'imgscraper_history';
+    const MAX_HISTORY = 6;
 
     const $ = (sel, ctx = document) => ctx.querySelector(sel);
     const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
@@ -669,6 +946,103 @@
     const limitSelect = $('#limitSelect');
     const searchBtn = $('#searchBtn');
     const resultsEl = $('#results');
+    const historyEl = $('#historySection');
+    const historyChipsEl = $('#historyChips');
+    const historyClearEl = $('#historyClear');
+    const lightboxEl = $('#lightbox');
+    const lightboxImg = $('#lightboxImg');
+    const lightboxTitle = $('#lightboxTitle');
+    const lightboxLoading = $('#lightboxLoading');
+    const lightboxClose = $('#lightboxClose');
+    const lightboxSource = $('#lightboxSource');
+    const lightboxDownload = $('#lightboxDownload');
+
+    /* ========== HISTORY ========== */
+
+    function getHistory() {
+      try {
+        return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+      } catch { return []; }
+    }
+
+    function saveHistory(raw) {
+      let list = getHistory();
+      const normalized = raw.toLowerCase().trim();
+      list = list.filter(h => h.toLowerCase().trim() !== normalized);
+      list.unshift(raw.trim());
+      if (list.length > MAX_HISTORY) list = list.slice(0, MAX_HISTORY);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(list));
+      renderHistory();
+    }
+
+    function clearHistory() {
+      localStorage.removeItem(HISTORY_KEY);
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const list = getHistory();
+      if (list.length === 0) {
+        historyEl.classList.remove('visible');
+        return;
+      }
+      historyEl.classList.add('visible');
+      historyChipsEl.innerHTML = list.map(q =>
+        `<button class="history-chip" type="button">${escapeHtml(q)}</button>`
+      ).join('');
+
+      $$('.history-chip', historyChipsEl).forEach((chip, i) => {
+        chip.addEventListener('click', () => {
+          searchInput.value = list[i];
+          doSearch();
+        });
+      });
+    }
+
+    /* ========== LIGHTBOX ========== */
+
+    function openLightbox(img) {
+      const title = img.title || 'Untitled';
+      const src = img.link || img.thumbnail || '';
+      const source = img.source || '';
+
+      lightboxTitle.textContent = title;
+      lightboxImg.alt = title;
+      lightboxLoading.style.display = 'flex';
+      lightboxImg.style.display = 'none';
+
+      lightboxImg.onload = () => {
+        lightboxLoading.style.display = 'none';
+        lightboxImg.style.display = 'block';
+      };
+
+      lightboxImg.onerror = () => {
+        lightboxLoading.style.display = 'none';
+        lightboxImg.style.display = 'block';
+        lightboxImg.src = '';
+        lightboxImg.alt = 'Failed to load image';
+      };
+
+      lightboxImg.src = src;
+
+      if (source) {
+        lightboxSource.href = source;
+        lightboxSource.style.display = 'inline-flex';
+      } else {
+        lightboxSource.style.display = 'none';
+      }
+
+      lightboxDownload.href = src;
+
+      lightboxEl.classList.add('open');
+      document.body.classList.add('no-scroll');
+      lightboxClose.focus();
+    }
+
+    function closeLightbox() {
+      lightboxEl.classList.remove('open');
+      document.body.classList.remove('no-scroll');
+    }
 
     /* ========== STATE ========== */
 
@@ -776,35 +1150,41 @@
 
           for (const img of images) {
             const title = escapeHtml(img.title || 'Untitled');
-            const src = escapeAttr(img.link || img.thumbnail || '');
+            const link = escapeAttr(img.link || '');
             const thumbnail = escapeAttr(img.thumbnail || '');
             const source = escapeAttr(img.source || '');
             const sourceDisplay = source ? extractDomain(source) : '';
-            const fallbackId = `fallback-${cardIndex}`;
 
             html += `
-              <div class="image-card" data-index="${cardIndex}">
-                <a class="image-card-link" href="${source || '#'}" target="_blank" rel="noopener noreferrer" title="${title}">
-                  <div class="card-img-wrap">
-                    <img
-                      src="${thumbnail || src}"
-                      alt="${title}"
-                      loading="lazy"
-                      onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                    >
-                    <div class="card-img-fallback" style="display:none">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                        <circle cx="8.5" cy="8.5" r="1.5"/>
-                        <polyline points="21 15 16 10 5 21"/>
-                      </svg>
-                    </div>
-                    <div class="card-overlay">
-                      <span class="card-overlay-title">${title}</span>
-                      ${sourceDisplay ? `<span class="card-overlay-source">${escapeHtml(sourceDisplay)}</span>` : ''}
-                    </div>
+              <div class="image-card"
+                data-index="${cardIndex}"
+                data-link="${link}"
+                data-thumbnail="${thumbnail}"
+                data-source="${source}"
+                data-title="${title.replace(/"/g, '&quot;')}"
+                tabindex="0"
+                role="button"
+                aria-label="${title.replace(/"/g, '&quot;')}"
+              >
+                <div class="card-img-wrap">
+                  <img
+                    src="${thumbnail || link}"
+                    alt="${title}"
+                    loading="lazy"
+                    onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                  >
+                  <div class="card-img-fallback" style="display:none">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                      <circle cx="8.5" cy="8.5" r="1.5"/>
+                      <polyline points="21 15 16 10 5 21"/>
+                    </svg>
                   </div>
-                </a>
+                  <div class="card-overlay">
+                    <span class="card-overlay-title">${title}</span>
+                    ${sourceDisplay ? `<span class="card-overlay-source">${escapeHtml(sourceDisplay)}</span>` : ''}
+                  </div>
+                </div>
               </div>
             `;
 
@@ -821,7 +1201,6 @@
 
       resultsEl.innerHTML = html;
 
-      // Staggered animation
       requestAnimationFrame(() => {
         $$('.image-card', resultsEl).forEach((card, i) => {
           const delay = Math.min(i * 50, 400);
@@ -887,6 +1266,7 @@
           return;
         }
 
+        saveHistory(raw);
         showResults(data.results);
       } catch (err) {
         showErrorState(err.message || 'Connection error');
@@ -906,9 +1286,51 @@
       }
     });
 
+    historyClearEl.addEventListener('click', clearHistory);
+
+    lightboxClose.addEventListener('click', closeLightbox);
+
+    lightboxEl.addEventListener('click', (e) => {
+      if (e.target === lightboxEl) closeLightbox();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && lightboxEl.classList.contains('open')) {
+        closeLightbox();
+      }
+    });
+
+    resultsEl.addEventListener('click', (e) => {
+      const card = e.target.closest('.image-card');
+      if (!card) return;
+      const img = {
+        title: card.dataset.title,
+        link: card.dataset.link,
+        thumbnail: card.dataset.thumbnail,
+        source: card.dataset.source,
+      };
+      openLightbox(img);
+    });
+
+    resultsEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        const card = e.target.closest('.image-card');
+        if (!card) return;
+        e.preventDefault();
+        const img = {
+          title: card.dataset.title,
+          link: card.dataset.link,
+          thumbnail: card.dataset.thumbnail,
+          source: card.dataset.source,
+        };
+        openLightbox(img);
+      }
+    });
+
     /* ========== INIT ========== */
 
     showEmptyState();
+    renderHistory();
   </script>
 </body>
 </html>
