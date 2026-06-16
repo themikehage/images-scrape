@@ -563,10 +563,11 @@
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
       opacity: 0;
+      pointer-events: none;
       transition: opacity var(--normal);
     }
 
-    .lightbox.open { opacity: 1; }
+    .lightbox.open { opacity: 1; pointer-events: auto; }
 
     .lightbox-content {
       position: relative;
@@ -906,7 +907,7 @@
         <div class="lightbox-img-loading" id="lightboxLoading">
           <div class="spinner"></div>
         </div>
-        <img id="lightboxImg" src="" alt="">
+        <img id="lightboxImg" src="" alt="" tabindex="-1">
       </div>
       <div class="lightbox-body">
         <div class="lightbox-info">
@@ -1037,11 +1038,13 @@
       lightboxEl.classList.add('open');
       document.body.classList.add('no-scroll');
       lightboxClose.focus();
+      lightboxImg.focus();
     }
 
     function closeLightbox() {
       lightboxEl.classList.remove('open');
       document.body.classList.remove('no-scroll');
+      searchInput.focus();
     }
 
     /* ========== STATE ========== */
