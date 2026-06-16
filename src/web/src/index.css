@@ -1,26 +1,35 @@
-@import "tailwindcss";
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
-@theme {
-  --color-base: #F5F5F4;
-  --color-surface: #FFFFFF;
-  --color-muted: #78716C;
-  --color-subtle: #A8A29E;
-  --color-accent: #7C3AED;
-  --color-accent-hover: #6D28D9;
-  --color-accent-soft: #F5F3FF;
-  --color-border: #E7E5E4;
-  --color-border-strong: #D6D3D1;
-  --color-error: #DC2626;
-  --color-error-soft: #FEF2F2;
-  --color-success: #10B981;
-  --color-overlay: rgba(0,0,0,0.55);
-
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "DM Serif Display", ui-serif, Georgia, serif;
-
-  --animate-card-in: cardIn 250ms both;
-  --animate-spin: spin 0.8s linear infinite;
+  body {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--color-text, #1C1917);
+    background: var(--color-base);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@import "tailwindcss" layer(tailwind) theme;
 
 @keyframes cardIn {
   from {
@@ -36,31 +45,4 @@
 @keyframes pulse-custom {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
-}
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  font-family: var(--font-sans);
-  font-size: 0.9375rem;
-  line-height: 1.5;
-  color: var(--color-text, #1C1917);
-  background: var(--color-base);
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
 }
