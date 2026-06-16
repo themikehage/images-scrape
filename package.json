@@ -5,9 +5,12 @@
   "main": "src/server.ts",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "tsx watch src/server.ts & vite --root src/web",
+    "dev:server": "tsx watch src/server.ts",
+    "dev:web": "vite --root src/web",
     "start": "node dist/server.js",
     "build": "tsc",
+    "build:web": "cd src/web && npx vite build",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

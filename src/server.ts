@@ -10,9 +10,7 @@ const PORT = parseInt(process.env.PORT || "3000", 10);
 
 app.use(express.json());
 
-app.get("/", (_req, res) => {
-  res.sendFile(path.join(__dirname, "..", "public", "index.html"));
-});
+app.use(express.static(path.join(__dirname, "web")));
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: Date.now() });
