@@ -3,7 +3,7 @@ WORKDIR /app
 COPY src/web/package*.json ./
 RUN npm ci
 COPY src/web/ ./
-RUN npx vite build --outDir ../dist/web
+RUN npx vite build --outDir /app/dist/web
 
 FROM node:20-alpine AS server-builder
 WORKDIR /app
