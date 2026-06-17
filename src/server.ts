@@ -21,7 +21,7 @@ app.get("/api/health", (_req, res) => {
 
 app.post("/api/web-search", async (req, res) => {
   try {
-    const { queries, limit } = req.body;
+    const { queries, limit, region } = req.body;
 
     if (!queries || !Array.isArray(queries) || queries.length === 0) {
       res.status(400).json({ success: false, error: "queries must be a non-empty array" });
@@ -31,7 +31,7 @@ app.post("/api/web-search", async (req, res) => {
     const maxLimit = 20;
     const actualLimit = limit && typeof limit === "number" ? Math.min(limit, maxLimit) : 10;
 
-    const results = await scrapeWebMultiple(queries, actualLimit);
+    const results = await scrapeWebMultiple(queries, actualLimit, region);
     const response: WebSearchResponse = { success: true, results };
     res.json(response);
   } catch (err) {

@@ -24,7 +24,27 @@ function randomCvid(): string {
   return id;
 }
 
-async function fetchBing(query: string, ua: string, referer: string): Promise<string> {
+const DEFAULT_REGION = process.env.BING_REGION || "us";
+const DEFAULT_LANG = process.env.BING_LANG || "en";
+
+function regionLang(region: string): { cc: string; lang: string } {
+  const map: Record<string, { cc: string; lang: string }> = {
+    us: { cc: "us", lang: "en" },
+    es: { cc: "es", lang: "es" },
+    mx: { cc: "mx", lang: "es" },
+    ar: { cc: "ar", lang: "es" },
+    uk: { cc: "gb", lang: "en-GB" },
+    de: { cc: "de", lang: "de" },
+    fr: { cc: "fr", lang: "fr" },
+    it: { cc: "it", lang: "it" },
+    br: { cc: "br", lang: "pt-BR" },
+    jp: { cc: "jp", lang: "ja" },
+  };
+  return map[region.toLowerCase()] || { cc: DEFAULT_REGION, lang: DEFAULT_LANG };
+}
+
+async function fetchBing(query: string, ua: string, referer: string, region?: string): Promise<string> {
+  const loc = regionLang(region || DEFAULT_REGION);
   const params = new URLSearchParams({
     q: query,
     qs: "n",
@@ -33,6 +53,8 @@ async function fetchBing(query: string, ua: string, referer: string): Promise<st
     pq: query,
     sc: `10-${query.length}`,
     cvid: randomCvid(),
+    cc: loc.cc,
+    setlang: loc.lang,
   });
   const url = `${BING_URL}?${params}`;
 
@@ -40,7 +62,7 @@ async function fetchBing(query: string, ua: string, referer: string): Promise<st
     headers: {
       "User-Agent": ua,
       Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Accept-Language": "en-US,en;q=0.5",
+      "Accept-Language": `${loc.lang},${loc.lang.split("-")[0]};q=0.5`,
       Referer: referer,
       DNT: "1",
       "Cache-Control": "no-cache",
@@ -53,6 +75,15 @@ async function fetchBing(query: string, ua: string, referer: string): Promise<st
   }
 
   return await response.text();
+}
+
+function cleanCiteUrl(cite: string): string {
+  return cite
+    .replace(/<[^>]+>/g, "")
+    .replace(/\s+/g, " ")
+    .replace(/ \u203A .*$/g, "")
+    .replace(/ \u00BB .*$/g, "")
+    .trim();
 }
 
 function extractWebResults(html: string, query: string, limit: number): WebResult[] {
@@ -77,11 +108,14 @@ function extractWebResults(html: string, query: string, limit: number): WebResul
     if (!title) continue;
 
     const citeMatch = li.match(/<cite[^>]*>([\s\S]*?)<\/cite>/);
-    let url = citeMatch
-      ? citeMatch[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim()
-      : href;
+    let url: string;
+    if (citeMatch) {
+      url = cleanCiteUrl(citeMatch[1]);
+    } else {
+      url = href;
+    }
 
-    if (seen.has(url)) continue;
+    if (!url || seen.has(url)) continue;
     seen.add(url);
 
     let snippet = "";
@@ -108,7 +142,8 @@ function extractWebResults(html: string, query: string, limit: number): WebResul
 
 export async function scrapeWeb(
   query: string,
-  limit: number = 10
+  limit: number = 10,
+  region?: string
 ): Promise<WebResult[]> {
   let best: WebResult[] = [];
 
@@ -117,7 +152,7 @@ export async function scrapeWeb(
     const ref = REFERERS[attempt % REFERERS.length];
 
     try {
-      const html = await fetchBing(query, ua, ref);
+      const html = await fetchBing(query, ua, ref, region);
       const results = extractWebResults(html, query, limit);
 
       if (results.length > best.length) {
@@ -139,13 +174,14 @@ export async function scrapeWeb(
 
 export async function scrapeWebMultiple(
   queries: string[],
-  limit: number = 10
+  limit: number = 10,
+  region?: string
 ): Promise<{ query: string; results: WebResult[]; error?: string }[]> {
   const results: { query: string; results: WebResult[]; error?: string }[] = [];
 
   for (const query of queries) {
     try {
-      const webResults = await scrapeWeb(query, limit);
+      const webResults = await scrapeWeb(query, limit, region);
       results.push({ query, results: webResults });
     } catch (err) {
       results.push({

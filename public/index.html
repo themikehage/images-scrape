@@ -967,6 +967,18 @@
           <button class="mode-btn active" data-mode="images" role="tab" aria-selected="true">Images</button>
           <button class="mode-btn" data-mode="web" role="tab" aria-selected="false">Web</button>
         </div>
+        <select id="regionSelect" class="limit-select" aria-label="Region" style="min-width:60px;">
+          <option value="us" selected>US</option>
+          <option value="es">ES</option>
+          <option value="mx">MX</option>
+          <option value="ar">AR</option>
+          <option value="uk">UK</option>
+          <option value="de">DE</option>
+          <option value="fr">FR</option>
+          <option value="it">IT</option>
+          <option value="br">BR</option>
+          <option value="jp">JP</option>
+        </select>
         <select id="limitSelect" class="limit-select" aria-label="Results per query">
           <option value="10">10</option>
           <option value="20" selected>20</option>
@@ -1048,6 +1060,7 @@
 
     const searchInput = $('#searchInput');
     const limitSelect = $('#limitSelect');
+    const regionSelect = $('#regionSelect');
     const searchBtn = $('#searchBtn');
     const resultsEl = $('#results');
     const historyEl = $('#historySection');
@@ -1447,10 +1460,14 @@
       const api = currentMode === 'web' ? API_WEB : API_IMAGES;
 
       try {
+        const body: Record<string, unknown> = { queries, limit: getLimit() };
+        if (currentMode === 'web') {
+          body.region = regionSelect.value;
+        }
         const res = await fetch(api, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ queries, limit: getLimit() }),
+          body: JSON.stringify(body),
         });
 
         const data = await res.json();
@@ -1484,29 +1501,32 @@
       }
     });
 
-    $$('.mode-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        $$('.mode-btn').forEach(b => {
-          b.classList.remove('active');
-          b.setAttribute('aria-selected', 'false');
+        $$('.mode-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            $$('.mode-btn').forEach(b => {
+              b.classList.remove('active');
+              b.setAttribute('aria-selected', 'false');
+            });
+            btn.classList.add('active');
+            btn.setAttribute('aria-selected', 'true');
+            currentMode = btn.dataset.mode;
+
+            const hint = $('#searchHint');
+            const input = $('#searchInput');
+            const rsel = $('#regionSelect');
+            if (currentMode === 'web') {
+              hint.textContent = 'Enter search terms separated by commas to search the web';
+              input.placeholder = 'typescript, react, node.js';
+              rsel.style.display = '';
+            } else {
+              hint.textContent = 'Enter search terms separated by commas';
+              input.placeholder = 'roma, paris, tokyo';
+              rsel.style.display = 'none';
+            }
+
+            showEmptyState();
+          });
         });
-        btn.classList.add('active');
-        btn.setAttribute('aria-selected', 'true');
-        currentMode = btn.dataset.mode;
-
-        const hint = $('#searchHint');
-        const input = $('#searchInput');
-        if (currentMode === 'web') {
-          hint.textContent = 'Enter search terms separated by commas to search the web';
-          input.placeholder = 'typescript, react, node.js';
-        } else {
-          hint.textContent = 'Enter search terms separated by commas';
-          input.placeholder = 'roma, paris, tokyo';
-        }
-
-        showEmptyState();
-      });
-    });
 
     historyClearEl.addEventListener('click', clearHistory);
 
@@ -1552,6 +1572,7 @@
 
     /* ========== INIT ========== */
 
+    regionSelect.style.display = 'none';
     showEmptyState();
     renderHistory();
   </script>
