@@ -77,15 +77,18 @@ async function fetchBing(query: string, ua: string, referer: string, region?: st
   return await response.text();
 }
 
-function cleanCiteUrl(cite: string): string {
-  return cite
-    .replace(/<[^>]+>/g, "")
-    .replace(/\s+/g, " ")
-    .replace(/ \u203A /g, "/")
-    .replace(/ \u00BB /g, "/")
-    .replace(/ \u203A$/, "")
-    .replace(/ \u00BB$/, "")
-    .trim();
+function decodeBingUrl(href: string): string | null {
+  const uMatch = href.match(/[?&]u=([^&]+)/);
+  if (!uMatch) return null;
+  try {
+    const b64 = uMatch[1].slice(2);
+    const pad = 4 - b64.length % 4;
+    const decoded = Buffer.from(b64 + (pad === 4 ? "" : "=".repeat(pad)), "base64").toString("utf-8");
+    if (decoded.startsWith("http://") || decoded.startsWith("https://")) {
+      return decoded;
+    }
+  } catch {}
+  return null;
 }
 
 function extractWebResults(html: string, query: string, limit: number): WebResult[] {
@@ -109,12 +112,19 @@ function extractWebResults(html: string, query: string, limit: number): WebResul
 
     if (!title) continue;
 
-    const citeMatch = li.match(/<cite[^>]*>([\s\S]*?)<\/cite>/);
-    let url: string;
-    if (citeMatch) {
-      url = cleanCiteUrl(citeMatch[1]);
-    } else {
-      url = href;
+    let url = decodeBingUrl(href);
+    if (!url) {
+      const citeMatch = li.match(/<cite[^>]*>([\s\S]*?)<\/cite>/);
+      url = citeMatch
+        ? citeMatch[1]
+            .replace(/<[^>]+>/g, "")
+            .replace(/\s+/g, " ")
+            .replace(/ \u203A /g, "/")
+            .replace(/ \u00BB /g, "/")
+            .replace(/ \u203A$/, "")
+            .replace(/ \u00BB$/, "")
+            .trim()
+        : href;
     }
 
     if (!url || seen.has(url)) continue;
