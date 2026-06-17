@@ -23,3 +23,21 @@ export interface ScrapeResponse {
   results: ScrapeResult[];
   error?: string;
 }
+
+export interface WebResult {
+  title: string;
+  url: string;
+  snippet: string;
+}
+
+export interface WebSearchResult {
+  query: string;
+  results: WebResult[];
+  error?: string;
+}
+
+export interface WebSearchResponse {
+  success: boolean;
+  results: WebSearchResult[];
+  error?: string;
+}

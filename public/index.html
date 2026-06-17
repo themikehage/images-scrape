@@ -253,6 +253,37 @@
 
     .btn-icon { width: 18px; height: 18px; }
 
+    .mode-toggle {
+      display: inline-flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 3px;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .mode-btn {
+      padding: 8px 18px;
+      border: none;
+      border-radius: calc(var(--radius-lg) - 3px);
+      background: transparent;
+      color: var(--text-2);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background var(--fast), color var(--fast);
+      white-space: nowrap;
+    }
+
+    .mode-btn:hover { color: var(--text); }
+    .mode-btn.active {
+      background: var(--accent);
+      color: white;
+    }
+    .mode-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
     .search-hint {
       font-size: 0.8125rem;
       color: var(--text-3);
@@ -394,6 +425,70 @@
     }
 
     .card-img-fallback svg { width: 28px; height: 28px; opacity: 0.4; }
+
+    .web-list { display: flex; flex-direction: column; gap: var(--space-md); }
+
+    .web-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md) var(--space-lg);
+      transition: border-color var(--fast), box-shadow var(--fast);
+    }
+
+    .web-card:hover {
+      border-color: var(--accent);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .web-card-title {
+      font-size: 1.0625rem;
+      font-weight: 600;
+      line-height: 1.3;
+      margin-bottom: 2px;
+    }
+
+    .web-card-title a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .web-card-title a:hover { text-decoration: underline; }
+
+    .web-card-url {
+      font-size: 0.8125rem;
+      color: var(--success);
+      margin-bottom: var(--space-xs);
+      word-break: break-all;
+    }
+
+    .web-card-snippet {
+      font-size: 0.875rem;
+      color: var(--text-2);
+      line-height: 1.5;
+    }
+
+    .web-skeleton-list { display: flex; flex-direction: column; gap: var(--space-md); }
+
+    .web-skeleton-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md) var(--space-lg);
+    }
+
+    .web-skeleton-line {
+      height: 14px;
+      background: var(--border);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .web-skeleton-line:nth-child(1) { width: 55%; }
+    .web-skeleton-line:nth-child(2) { width: 35%; height: 12px; }
+    .web-skeleton-line:nth-child(3) { width: 90%; }
+    .web-skeleton-line:nth-child(4) { width: 75%; }
 
     .no-results {
       font-size: 0.9375rem;
@@ -821,6 +916,8 @@
       .main { padding: var(--space-md); }
 
       .search-form { flex-direction: column; }
+      .mode-toggle { width: 100%; }
+      .mode-btn { flex: 1; text-align: center; }
       .limit-select { width: 100%; }
       .search-btn { width: 100%; justify-content: center; }
 
@@ -866,6 +963,10 @@
             aria-label="Search terms separated by commas"
           >
         </div>
+        <div class="mode-toggle" role="tablist" aria-label="Search mode">
+          <button class="mode-btn active" data-mode="images" role="tab" aria-selected="true">Images</button>
+          <button class="mode-btn" data-mode="web" role="tab" aria-selected="false">Web</button>
+        </div>
         <select id="limitSelect" class="limit-select" aria-label="Results per query">
           <option value="10">10</option>
           <option value="20" selected>20</option>
@@ -880,7 +981,7 @@
           <span>Search</span>
         </button>
       </div>
-      <p class="search-hint">Enter search terms separated by commas</p>
+      <p class="search-hint" id="searchHint">Enter search terms separated by commas</p>
       <div class="history-section" id="historySection">
         <span class="history-label">Recent</span>
         <div class="history-chips" id="historyChips"></div>
@@ -936,9 +1037,11 @@
   </div>
 
   <script>
-    const API = '/api/scrape';
+    const API_IMAGES = '/api/scrape';
+    const API_WEB = '/api/web-search';
     const HISTORY_KEY = 'imgscraper_history';
     const MAX_HISTORY = 6;
+    let currentMode = 'images';
 
     const $ = (sel, ctx = document) => ctx.querySelector(sel);
     const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
@@ -1050,21 +1153,22 @@
     /* ========== STATE ========== */
 
     function showEmptyState() {
+      const isWeb = currentMode === 'web';
       resultsEl.innerHTML = `
         <div class="empty-state">
           <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-            <circle cx="8.5" cy="8.5" r="1.5"/>
-            <polyline points="21 15 16 10 5 21"/>
+            ${isWeb
+              ? '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>'
+              : '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>'}
           </svg>
-          <h2 class="empty-title">Search for images</h2>
-          <p class="empty-subtitle">Enter one or more terms separated by commas to find images from Bing.</p>
+          <h2 class="empty-title">${isWeb ? 'Search the web' : 'Search for images'}</h2>
+          <p class="empty-subtitle">${isWeb ? 'Enter one or more terms separated by commas to search Bing.' : 'Enter one or more terms separated by commas to find images from Bing.'}</p>
           <div class="empty-chips">
-            <button class="empty-chip" data-query="roma">roma</button>
-            <button class="empty-chip" data-query="paris">paris</button>
-            <button class="empty-chip" data-query="tokyo">tokyo</button>
-            <button class="empty-chip" data-query="new york">new york</button>
-            <button class="empty-chip" data-query="barcelona">barcelona</button>
+            <button class="empty-chip" data-query="javascript">javascript</button>
+            <button class="empty-chip" data-query="react">react</button>
+            <button class="empty-chip" data-query="typescript">typescript</button>
+            <button class="empty-chip" data-query="node.js">node.js</button>
+            <button class="empty-chip" data-query="css">css</button>
           </div>
         </div>
       `;
@@ -1078,19 +1182,35 @@
     }
 
     function showSkeletons(count = 8) {
-      resultsEl.innerHTML = `
-        <div class="skeleton-grid">
-          ${Array.from({ length: count }, () => `
-            <div class="skeleton-card">
-              <div class="skeleton-img"></div>
-              <div class="skeleton-body">
-                <div class="skeleton-line"></div>
-                <div class="skeleton-line"></div>
+      const isWeb = currentMode === 'web';
+      if (isWeb) {
+        resultsEl.innerHTML = `
+          <div class="web-skeleton-list">
+            ${Array.from({ length: count }, () => `
+              <div class="web-skeleton-card">
+                <div class="web-skeleton-line"></div>
+                <div class="web-skeleton-line"></div>
+                <div class="web-skeleton-line"></div>
+                <div class="web-skeleton-line"></div>
               </div>
-            </div>
-          `).join('')}
-        </div>
-      `;
+            `).join('')}
+          </div>
+        `;
+      } else {
+        resultsEl.innerHTML = `
+          <div class="skeleton-grid">
+            ${Array.from({ length: count }, () => `
+              <div class="skeleton-card">
+                <div class="skeleton-img"></div>
+                <div class="skeleton-body">
+                  <div class="skeleton-line"></div>
+                  <div class="skeleton-line"></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
     }
 
     function showErrorState(message) {
@@ -1213,6 +1333,68 @@
       });
     }
 
+    function showWebResults(results) {
+      if (!results || results.length === 0) {
+        resultsEl.innerHTML = `<p class="no-results">No results found.</p>`;
+        return;
+      }
+
+      let html = '';
+
+      for (const group of results) {
+        const query = escapeHtml(group.query);
+        const items = group.results || [];
+        const error = group.error;
+
+        html += `<div class="result-group">`;
+
+        html += `
+          <div class="result-header">
+            <h2 class="result-query">
+              <span class="result-query-accent">${query}</span>
+            </h2>
+            <span class="result-count">${items.length} result${items.length !== 1 ? 's' : ''}</span>
+          </div>
+        `;
+
+        if (error) {
+          html += `
+            <div class="result-error">
+              <svg class="result-error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <span>${escapeHtml(error)}</span>
+            </div>
+          `;
+        }
+
+        if (items.length > 0) {
+          html += `<div class="web-list">`;
+          for (const item of items) {
+            const title = escapeHtml(item.title);
+            const snippet = escapeHtml(item.snippet);
+            const url = escapeAttr(item.url);
+            html += `
+              <div class="web-card" data-url="${url}">
+                <div class="web-card-title"><a href="${url}" target="_blank" rel="noopener noreferrer">${title}</a></div>
+                <div class="web-card-url">${escapeHtml(item.url)}</div>
+                ${snippet ? `<div class="web-card-snippet">${snippet}</div>` : ''}
+              </div>
+            `;
+          }
+          html += `</div>`;
+        } else if (!error) {
+          html += `<p class="no-results">No results found for <strong>${query}</strong>.</p>`;
+        }
+
+        html += `</div>`;
+      }
+
+      resultsEl.innerHTML = html;
+    }
+
     /* ========== UTILITIES ========== */
 
     function escapeHtml(str) {
@@ -1238,9 +1420,17 @@
 
     function setLoading(v) {
       searchBtn.disabled = v;
-      searchBtn.innerHTML = v
-        ? `<span>Searching&hellip;</span>`
-        : `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><span>Search</span>`;
+      if (v) {
+        searchBtn.innerHTML = `<span>Searching&hellip;</span>`;
+      } else {
+        const isWeb = currentMode === 'web';
+        searchBtn.innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><span>${isWeb ? 'Search web' : 'Search'}</span>`;
+      }
+    }
+
+    function getLimit() {
+      const val = parseInt(limitSelect.value, 10);
+      return currentMode === 'web' ? Math.min(val, 20) : val;
     }
 
     async function doSearch() {
@@ -1254,12 +1444,13 @@
 
       setLoading(true);
       showSkeletons(8);
+      const api = currentMode === 'web' ? API_WEB : API_IMAGES;
 
       try {
-        const res = await fetch(API, {
+        const res = await fetch(api, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ queries, limit: parseInt(limitSelect.value, 10) || 20 }),
+          body: JSON.stringify({ queries, limit: getLimit() }),
         });
 
         const data = await res.json();
@@ -1270,7 +1461,11 @@
         }
 
         saveHistory(raw);
-        showResults(data.results);
+        if (currentMode === 'web') {
+          showWebResults(data.results);
+        } else {
+          showResults(data.results);
+        }
       } catch (err) {
         showErrorState(err.message || 'Connection error');
       } finally {
@@ -1289,6 +1484,30 @@
       }
     });
 
+    $$('.mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        $$('.mode-btn').forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        currentMode = btn.dataset.mode;
+
+        const hint = $('#searchHint');
+        const input = $('#searchInput');
+        if (currentMode === 'web') {
+          hint.textContent = 'Enter search terms separated by commas to search the web';
+          input.placeholder = 'typescript, react, node.js';
+        } else {
+          hint.textContent = 'Enter search terms separated by commas';
+          input.placeholder = 'roma, paris, tokyo';
+        }
+
+        showEmptyState();
+      });
+    });
+
     historyClearEl.addEventListener('click', clearHistory);
 
     lightboxClose.addEventListener('click', closeLightbox);
@@ -1305,14 +1524,15 @@
 
     resultsEl.addEventListener('click', (e) => {
       const card = e.target.closest('.image-card');
-      if (!card) return;
-      const img = {
-        title: card.dataset.title,
-        link: card.dataset.link,
-        thumbnail: card.dataset.thumbnail,
-        source: card.dataset.source,
-      };
-      openLightbox(img);
+      if (card) {
+        const img = {
+          title: card.dataset.title,
+          link: card.dataset.link,
+          thumbnail: card.dataset.thumbnail,
+          source: card.dataset.source,
+        };
+        openLightbox(img);
+      }
     });
 
     resultsEl.addEventListener('keydown', (e) => {
