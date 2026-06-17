@@ -59,39 +59,39 @@ function extractVideos(html: string, query: string, limit: number): VideoResult[
   const results: VideoResult[] = [];
   const seen = new Set<string>();
 
-  const cardRegex = /<div[^>]+class="[^"]*mc_vtvc_con_rc[^"]*"[^>]*>([\s\S]*?)<\/div>\s*<\/div>\s*<\/div>/g;
+  const linkRegex = /<a[^>]+class="[^"]*mc_vtvc_link[^"]*"[^>]*>([\s\S]*?)<\/a>/g;
   let match;
 
-  while ((match = cardRegex.exec(html)) !== null && results.length < limit) {
-    const card = match[0];
+  while ((match = linkRegex.exec(html)) !== null && results.length < limit) {
+    const block = match[1];
 
-    const ourlMatch = card.match(/ourl="([^"]+)"/);
+    const ourlMatch = block.match(/ourl="([^"]+)"/);
     if (!ourlMatch) continue;
 
     const url = ourlMatch[1];
     if (seen.has(url)) continue;
     seen.add(url);
 
-    const titleMatch = card.match(/mc_vtvc_title[^>]*title="([^"]*)"/);
+    const titleMatch = block.match(/mc_vtvc_title[^>]*title="([^"]*)"/);
     const title = titleMatch ? titleMatch[1] : query;
 
-    const thumbMatch = card.match(/data-src-hq="([^"]+)"/);
+    const thumbMatch = block.match(/data-src-hq="([^"]+)"/);
     const thumbnail = thumbMatch ? thumbMatch[1].replace(/&amp;/g, "&") : "";
 
-    const durationMatch = card.match(/<div[^>]+class="mc_bc_rc items[^"]*"[^>]*>([\s\S]*?)<\/div>/);
+    const durationMatch = block.match(/<div[^>]+class="mc_bc_rc items[^"]*"[^>]*>([\s\S]*?)<\/div>/);
     const duration = durationMatch ? durationMatch[1].trim() : "";
 
-    const sourceMatch = card.match(/<span[^>]+class="[^"]*srcttl[^"]*"[^>]*>([\s\S]*?)<\/span>/);
+    const sourceMatch = block.match(/<span[^>]+class="[^"]*srcttl[^"]*"[^>]*>([\s\S]*?)<\/span>/);
     const source = sourceMatch
       ? sourceMatch[1].replace(/<[^>]+>/g, "").trim()
       : "";
 
-    const channelMatch = card.match(/mc_vtvc_meta_row_channel[^>]*>([\s\S]*?)<\/span>/);
+    const channelMatch = block.match(/mc_vtvc_meta_row_channel[^>]*>([\s\S]*?)<\/span>/);
     const channel = channelMatch
       ? channelMatch[1].replace(/<[^>]+>/g, "").trim()
       : "";
 
-    const viewsMatch = card.match(/meta_vc_content[^>]*>([\s\S]*?)</);
+    const viewsMatch = block.match(/meta_vc_content[^>]*>([\s\S]*?)</);
     const views = viewsMatch ? viewsMatch[1].trim() : "";
 
     results.push({ title, url, thumbnail, duration, source, channel, views });
