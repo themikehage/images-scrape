@@ -1460,7 +1460,7 @@
       const api = currentMode === 'web' ? API_WEB : API_IMAGES;
 
       try {
-        const body: Record<string, unknown> = { queries, limit: getLimit() };
+        const body = { queries, limit: getLimit() };
         if (currentMode === 'web') {
           body.region = regionSelect.value;
         }
