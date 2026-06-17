@@ -81,8 +81,10 @@ function cleanCiteUrl(cite: string): string {
   return cite
     .replace(/<[^>]+>/g, "")
     .replace(/\s+/g, " ")
-    .replace(/ \u203A .*$/g, "")
-    .replace(/ \u00BB .*$/g, "")
+    .replace(/ \u203A /g, "/")
+    .replace(/ \u00BB /g, "/")
+    .replace(/ \u203A$/, "")
+    .replace(/ \u00BB$/, "")
     .trim();
 }
 
