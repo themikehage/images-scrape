@@ -41,3 +41,25 @@ export interface WebSearchResponse {
   results: WebSearchResult[];
   error?: string;
 }
+
+export interface VideoResult {
+  title: string;
+  url: string;
+  thumbnail: string;
+  duration: string;
+  source: string;
+  channel: string;
+  views: string;
+}
+
+export interface VideoSearchResult {
+  query: string;
+  results: VideoResult[];
+  error?: string;
+}
+
+export interface VideoSearchResponse {
+  success: boolean;
+  results: VideoSearchResult[];
+  error?: string;
+}
