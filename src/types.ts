@@ -63,3 +63,24 @@ export interface VideoSearchResponse {
   results: VideoSearchResult[];
   error?: string;
 }
+
+export interface NewsResult {
+  title: string;
+  url: string;
+  source: string;
+  snippet: string;
+  date: string;
+  thumbnail: string;
+}
+
+export interface NewsSearchResult {
+  query: string;
+  results: NewsResult[];
+  error?: string;
+}
+
+export interface NewsSearchResponse {
+  success: boolean;
+  results: NewsSearchResult[];
+  error?: string;
+}

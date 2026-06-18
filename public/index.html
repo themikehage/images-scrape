@@ -1040,6 +1040,7 @@
           <button class="mode-btn active" data-mode="images" role="tab" aria-selected="true">Images</button>
           <button class="mode-btn" data-mode="web" role="tab" aria-selected="false">Web</button>
           <button class="mode-btn" data-mode="videos" role="tab" aria-selected="false">Videos</button>
+          <button class="mode-btn" data-mode="news" role="tab" aria-selected="false">News</button>
         </div>
         <select id="regionSelect" class="limit-select" aria-label="Region" style="min-width:60px;">
           <option value="us" selected>US</option>
@@ -1126,6 +1127,7 @@
     const API_IMAGES = '/api/scrape';
     const API_WEB = '/api/web-search';
     const API_VIDEOS = '/api/video-search';
+    const API_NEWS = '/api/news-search';
     const HISTORY_KEY = 'imgscraper_history';
     const MAX_HISTORY = 6;
     let currentMode = 'images';
@@ -1246,9 +1248,11 @@
         ? '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>'
         : mode === 'videos'
         ? '<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>'
+        : mode === 'news'
+        ? '<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-4 0V5a1 1 0 0 0-2 0v13a4 4 0 0 0 4 4z"/><path d="M18 7v-2H8v2"/>'
         : '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>';
-      const title = mode === 'web' ? 'Search the web' : mode === 'videos' ? 'Search for videos' : 'Search for images';
-      const subtitle = mode === 'web' ? 'Enter one or more terms separated by commas to search Bing.' : mode === 'videos' ? 'Enter one or more terms separated by commas to find videos on Bing.' : 'Enter one or more terms separated by commas to find images from Bing.';
+      const title = mode === 'web' ? 'Search the web' : mode === 'videos' ? 'Search for videos' : mode === 'news' ? 'Search for news' : 'Search for images';
+      const subtitle = mode === 'web' ? 'Enter one or more terms separated by commas to search Bing.' : mode === 'videos' ? 'Enter one or more terms separated by commas to find videos on Bing.' : mode === 'news' ? 'Enter one or more terms separated by commas to find news articles on Bing.' : 'Enter one or more terms separated by commas to find images from Bing.';
       resultsEl.innerHTML = `
         <div class="empty-state">
           <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1275,7 +1279,7 @@
     }
 
     function showSkeletons(count = 8) {
-      const isWeb = currentMode === 'web';
+      const isWeb = currentMode === 'web' || currentMode === 'news';
       if (isWeb) {
         resultsEl.innerHTML = `
           <div class="web-skeleton-list">
@@ -1565,6 +1569,75 @@
       resultsEl.innerHTML = html;
     }
 
+    function showNewsResults(results) {
+      if (!results || results.length === 0) {
+        resultsEl.innerHTML = `<p class="no-results">No results found.</p>`;
+        return;
+      }
+
+      let html = '';
+
+      for (const group of results) {
+        const query = escapeHtml(group.query);
+        const items = group.results || [];
+        const error = group.error;
+
+        html += `<div class="result-group">`;
+        html += `
+          <div class="result-header">
+            <h2 class="result-query">
+              <span class="result-query-accent">${query}</span>
+            </h2>
+            <span class="result-count">${items.length} article${items.length !== 1 ? 's' : ''}</span>
+          </div>
+        `;
+
+        if (error) {
+          html += `
+            <div class="result-error">
+              <svg class="result-error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <span>${escapeHtml(error)}</span>
+            </div>
+          `;
+        }
+
+        if (items.length > 0) {
+          html += `<div class="web-list">`;
+          for (const item of items) {
+            const title = escapeHtml(item.title);
+            const snippet = escapeHtml(item.snippet);
+            const url = escapeAttr(item.url);
+            const source = escapeHtml(item.source);
+            const date = escapeHtml(item.date);
+            const thumb = escapeAttr(item.thumbnail);
+            html += `
+              <div class="web-card" data-url="${url}">
+                <div style="display:flex;gap:16px;align-items:flex-start;">
+                  ${thumb ? `<a href="${url}" target="_blank" rel="noopener noreferrer" style="flex-shrink:0;width:120px;height:80px;border-radius:8px;overflow:hidden;"><img src="${thumb}" alt="${title}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.style.display='none'"></a>` : ''}
+                  <div style="flex:1;min-width:0;">
+                    <div class="web-card-title"><a href="${url}" target="_blank" rel="noopener noreferrer">${title}</a></div>
+                    <div style="font-size:0.75rem;color:var(--text-3);margin-bottom:4px;">${source}${date ? ' &middot; ' + date : ''}</div>
+                    ${snippet ? `<div class="web-card-snippet">${snippet}</div>` : ''}
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+          html += `</div>`;
+        } else if (!error) {
+          html += `<p class="no-results">No news found for <strong>${query}</strong>.</p>`;
+        }
+
+        html += `</div>`;
+      }
+
+      resultsEl.innerHTML = html;
+    }
+
     /* ========== UTILITIES ========== */
 
     function escapeHtml(str) {
@@ -1594,14 +1667,14 @@
         searchBtn.innerHTML = `<span>Searching&hellip;</span>`;
       } else {
         const mode = currentMode;
-        const label = mode === 'web' ? 'Search web' : mode === 'videos' ? 'Search videos' : 'Search';
+        const label = mode === 'web' ? 'Search web' : mode === 'videos' ? 'Search videos' : mode === 'news' ? 'Search news' : 'Search';
         searchBtn.innerHTML = `<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><span>${label}</span>`;
       }
     }
 
     function getLimit() {
       const val = parseInt(limitSelect.value, 10);
-      return currentMode === 'web' ? Math.min(val, 20) : val;
+      return (currentMode === 'web' || currentMode === 'news') ? Math.min(val, 20) : val;
     }
 
     async function doSearch() {
@@ -1615,11 +1688,11 @@
 
       setLoading(true);
       showSkeletons(8);
-      const api = currentMode === 'web' ? API_WEB : currentMode === 'videos' ? API_VIDEOS : API_IMAGES;
+      const api = currentMode === 'web' ? API_WEB : currentMode === 'videos' ? API_VIDEOS : currentMode === 'news' ? API_NEWS : API_IMAGES;
 
       try {
         const body = { queries, limit: getLimit() };
-        if (currentMode === 'web') {
+        if (currentMode === 'web' || currentMode === 'news') {
           body.region = regionSelect.value;
         }
         const res = await fetch(api, {
@@ -1640,6 +1713,8 @@
           showWebResults(data.results);
         } else if (currentMode === 'videos') {
           showVideoResults(data.results);
+        } else if (currentMode === 'news') {
+          showNewsResults(data.results);
         } else {
           showResults(data.results);
         }
@@ -1682,6 +1757,10 @@
               hint.textContent = 'Enter search terms separated by commas to find videos';
               input.placeholder = 'javascript tutorial, react course';
               rsel.style.display = 'none';
+            } else if (currentMode === 'news') {
+              hint.textContent = 'Enter search terms separated by commas to find news';
+              input.placeholder = 'technology, ai, spacex';
+              rsel.style.display = '';
             } else {
               hint.textContent = 'Enter search terms separated by commas';
               input.placeholder = 'roma, paris, tokyo';
