@@ -1129,8 +1129,19 @@
     const API_VIDEOS = '/api/video-search';
     const API_NEWS = '/api/news-search';
     const HISTORY_KEY = 'imgscraper_history';
+    const PREF_MODE_KEY = 'imgscraper_mode';
+    const PREF_REGION_KEY = 'imgscraper_region';
+    const PREF_LIMIT_KEY = 'imgscraper_limit';
     const MAX_HISTORY = 6;
     let currentMode = 'images';
+
+    function savePref(key, value) {
+      try { localStorage.setItem(key, value); } catch {}
+    }
+
+    function restorePref(key, fallback) {
+      try { return localStorage.getItem(key) ?? fallback; } catch { return fallback; }
+    }
 
     const $ = (sel, ctx = document) => ctx.querySelector(sel);
     const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
@@ -1725,6 +1736,43 @@
       }
     }
 
+    function applyMode(mode) {
+      $$('.mode-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      const btn = $(`.mode-btn[data-mode="${mode}"]`);
+      if (btn) {
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+      }
+      currentMode = mode;
+      savePref(PREF_MODE_KEY, mode);
+
+      const hint = $('#searchHint');
+      const input = $('#searchInput');
+      const rsel = $('#regionSelect');
+      if (mode === 'web') {
+        hint.textContent = 'Enter search terms separated by commas to search the web';
+        input.placeholder = 'typescript, react, node.js';
+        rsel.style.display = '';
+      } else if (mode === 'videos') {
+        hint.textContent = 'Enter search terms separated by commas to find videos';
+        input.placeholder = 'javascript tutorial, react course';
+        rsel.style.display = 'none';
+      } else if (mode === 'news') {
+        hint.textContent = 'Enter search terms separated by commas to find news';
+        input.placeholder = 'technology, ai, spacex';
+        rsel.style.display = '';
+      } else {
+        hint.textContent = 'Enter search terms separated by commas';
+        input.placeholder = 'roma, paris, tokyo';
+        rsel.style.display = 'none';
+      }
+
+      showEmptyState();
+    }
+
     /* ========== EVENTS ========== */
 
     searchBtn.addEventListener('click', doSearch);
@@ -1738,38 +1786,12 @@
 
         $$('.mode-btn').forEach(btn => {
           btn.addEventListener('click', () => {
-            $$('.mode-btn').forEach(b => {
-              b.classList.remove('active');
-              b.setAttribute('aria-selected', 'false');
-            });
-            btn.classList.add('active');
-            btn.setAttribute('aria-selected', 'true');
-            currentMode = btn.dataset.mode;
-
-            const hint = $('#searchHint');
-            const input = $('#searchInput');
-            const rsel = $('#regionSelect');
-            if (currentMode === 'web') {
-              hint.textContent = 'Enter search terms separated by commas to search the web';
-              input.placeholder = 'typescript, react, node.js';
-              rsel.style.display = '';
-            } else if (currentMode === 'videos') {
-              hint.textContent = 'Enter search terms separated by commas to find videos';
-              input.placeholder = 'javascript tutorial, react course';
-              rsel.style.display = 'none';
-            } else if (currentMode === 'news') {
-              hint.textContent = 'Enter search terms separated by commas to find news';
-              input.placeholder = 'technology, ai, spacex';
-              rsel.style.display = '';
-            } else {
-              hint.textContent = 'Enter search terms separated by commas';
-              input.placeholder = 'roma, paris, tokyo';
-              rsel.style.display = 'none';
-            }
-
-            showEmptyState();
+            applyMode(btn.dataset.mode);
           });
         });
+
+        limitSelect.addEventListener('change', () => savePref(PREF_LIMIT_KEY, limitSelect.value));
+        regionSelect.addEventListener('change', () => savePref(PREF_REGION_KEY, regionSelect.value));
 
     historyClearEl.addEventListener('click', clearHistory);
 
@@ -1815,8 +1837,9 @@
 
     /* ========== INIT ========== */
 
-    regionSelect.style.display = 'none';
-    showEmptyState();
+    limitSelect.value = restorePref(PREF_LIMIT_KEY, '20');
+    regionSelect.value = restorePref(PREF_REGION_KEY, 'us');
+    applyMode(restorePref(PREF_MODE_KEY, 'images'));
     renderHistory();
   </script>
 </body>
